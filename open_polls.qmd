@@ -1,0 +1,76 @@
+---
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+---
+
+![](./Ansible-Wordmark-Large-RGB-Black.png)
+
+# Currently Open Ansible Community Votes
+
+```{r setup}
+# Connect target: open_discourse_polls
+library(tidyverse)
+library(httr)
+library(gt)
+
+poll_cfg <- config::get(file = '/srv/docker-config/polls/polls.yml')
+
+api_user = poll_cfg$api_user
+api_key  = poll_cfg$api_key
+api_url  = poll_cfg$api_url
+api_call = poll_cfg$api_call
+auth     =   httr::add_headers(
+  "Api-Key" = api_key,
+  "Api-Username" = api_user
+)
+```
+
+```{r get_list}
+r <- httr::POST(
+  url = stringr::str_c(
+    api_url,
+    api_call
+  ),
+  config = auth,
+  encode = 'json'
+) |> content()
+
+df <- r$rows |>
+  transpose() |>
+  as_tibble(.name_repair = "unique") |>
+  unnest(everything())
+names(df) <- flatten_chr(r$columns)
+
+rels <- r$relations$topic |>
+  transpose() |>
+  as_tibble(.name_repair = 'unique') |>
+  unnest(everything())
+
+df <- df |> 
+  dplyr::left_join(rels, by = c("topic_id" = "id")) |>
+  dplyr::distinct(topic_id, num, tag_name, .keep_all = T) |>
+  dplyr::group_by(topic_id, num, category_id, cat_name, close_at, title, fancy_title, slug) |>
+  dplyr::summarise(tags = stringr::str_c(tag_name, collapse = ", "))
+```
+
+```{r gt}
+df |>
+  dplyr::ungroup() |>
+  dplyr::mutate(
+    url = stringr::str_c("https://forum.ansible.com/t/",topic_id,"/",num),
+    cat = stringr::str_c("https://forum.ansible.com/c/",category_id)
+  ) |>
+  dplyr::transmute(Topic = glue::glue('[{fancy_title}]({url})'),
+            Category = glue::glue('[{cat_name}]({cat})'),
+            Closes = as.Date(close_at),
+            Tags = tags
+  ) |>
+  gt() |>
+  fmt_markdown(columns = c('Topic','Category'))
+```
+
+Last rendered at: `r Sys.time()`

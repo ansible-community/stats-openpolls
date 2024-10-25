@@ -1,0 +1,6 @@
+default:
+  api_user: 'user'
+  api_key:  'apikey'
+  api_url:  'https://forum.mysite.com'
+  api_call: '/admin/plugins/explorer/queries/1/run'
+
