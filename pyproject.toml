@@ -1,0 +1,32 @@
+[project]
+name = "ansible-open-polls"
+version = "1.0.0"
+description = "Web page and JSON feed for open Ansible community polls"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask>=3.1,<4",
+    "gunicorn>=23,<24",
+    "PyYAML>=6.0,<7",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.400,<2",
+    "ruff>=0.14,<1",
+    "types-PyYAML>=6.0,<7",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+include = ["app.py"]
