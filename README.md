@@ -64,10 +64,17 @@ Install [uv](https://docs.astral.sh/uv/) and run the service from this directory
 ```sh
 uv sync --locked
 export FORUM_POLL_API="your-forum-api-key"
-uv run gunicorn --bind 0.0.0.0:8080 --worker-class gthread --workers 2 --threads 4 --timeout 60 --access-logfile - app:app
+uv run gunicorn \
+  --bind 0.0.0.0:8080 \
+  --worker-class gthread \
+  --workers 2 \
+  --threads 4 \
+  --timeout 60 \
+  --access-logfile - \
+  app:app
 ```
 
-Open <http://localhost:8080/> or request <http://localhost:8080/data.json>.
+Gunicorn writes each HTTP request to the terminal because `--access-logfile -` sends access logs to standard output. Open <http://localhost:8080/> or request <http://localhost:8080/data.json>.
 
 ## Build and run the container
 
